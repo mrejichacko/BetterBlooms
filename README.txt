@@ -1,12 +1,10 @@
 Code from: No one-size-fits-all: trait-dependent effects of local plant diversity on pollinators and pollination service in a densifying city
 Contact: Merin Reji Chacko (merin.rejichacko@gmail.com)
 
-## Usage
-
 To reproduce the models:
 
-1. Go to Envidat. NOTE: Most scripts in `02_analyses/` will not run without data being added to the "raw_data/RejiChacko_etal_2025_EnviDat" directory.
-Simply copy and unzip all the files from here: Reji Chacko, M., Moretti, M., Frey, D. (2025). Comprehensive dataset of pollinator diversity and visitation rates with individual-based traits and pollination success across four urban garden plant species. EnviDat. https://www.doi.org/10.16904/envidat.676.
+1. Go to Envidat. NOTE: Most scripts in `02_analyses/` will not run without data being added to the "raw_data/RejiChacko_etal_2025_EnviDat" directory. Simply copy and unzip all the files from here: 
+  Reji Chacko, M., Moretti, M., Frey, D. (2025). Comprehensive dataset of pollinator diversity and visitation rates with individual-based traits and pollination success across four urban garden plant species. EnviDat. https://www.doi.org/10.16904/envidat.676.
 2. Open `github.Rproj` in RStudio.
 3. Sequently run scripts from "scripts/02_analyses/".
 4. OPTIONAL: to reproduce the files in the "cleaned_data/" directory, the scripts from "scripts/01_data_prep" can be run. But the output files have already been provided in the "cleaned_data" directory.
