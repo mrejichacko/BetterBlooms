@@ -1,0 +1,11 @@
+"pollinator_group";"A_carrot";"S_carrot";"A_radish";"S_radish";"A_sainfoin";"S_sainfoin";"A_comfrey";"S_comfrey";"A_all";"S_all"
+"Anthophila";1620;46;1623;40;89;13;280;9;3612;66
+"Anthophila_noApis";1326;45;1423;39;76;12;280;9;3105;65
+"Apis mellifera";294;1;200;1;13;1;0;0;507;1
+"Bombus";26;5;23;5;34;4;280;9;363;10
+"solitary_Bees";953;27;213;24;42;8;0;0;1208;40
+"Syrphidae";690;28;919;28;0;0;0;0;1609;41
+"social_Bees";345;12;1177;12;34;4;280;9;1836;18
+"Wasps";115;29;16;5;0;0;0;0;131;31
+"Coleoptera";124;16;28;8;0;0;0;0;152;19
+"All_pollinators";2549;119;2586;81;89;13;280;9;5504;157
