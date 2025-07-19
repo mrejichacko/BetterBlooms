@@ -20,10 +20,6 @@ Simply copy and unzip all the files from here: Reji Chacko, M., Moretti, M., Fre
 │   ├── sampling_effort_gardens_plants_aggregated.txt
 │   └── sampling_effort_gardens_plants_aggregated_per_date.txt
 │
-├── environments # files in here will be created in the process of running the scripts
-│   ├── 1a_1b_environment.RData # example name
-│   └── 3a_environment.RData # example name
-│
 ├── raw_data
 │   ├── explanatory_variables.txt # Data from: Frey, D. & Moretti, M. A comprehensive dataset on cultivated and spontaneously growing vascular plants in urban gardens. Data in Brief 25, 103982 (2019).
 │   ├── plant_floristic_data.txt # Data from: Frey, D. & Moretti, M. A comprehensive dataset on cultivated and spontaneously growing vascular plants in urban gardens. Data in Brief 25, 103982 (2019).
