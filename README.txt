@@ -3,8 +3,7 @@ Contact: Merin Reji Chacko (merin.rejichacko@gmail.com)
 
 To reproduce the models:
 
-1. Go to Envidat. NOTE: Most scripts in `02_analyses/` will not run without data being added to the "raw_data/RejiChacko_etal_2025_EnviDat" directory. Simply copy and unzip all the files from here: 
-  Reji Chacko, M., Moretti, M., Frey, D. (2025). Comprehensive dataset of pollinator diversity and visitation rates with individual-based traits and pollination success across four urban garden plant species. EnviDat. https://www.doi.org/10.16904/envidat.676.
+1. Go to Envidat. NOTE: Most scripts in `02_analyses/` will not run without data being added to the "raw_data/RejiChacko_etal_2025_EnviDat" directory. Simply copy and unzip all the files from Reji Chacko et al (2025), see below for references.  
 2. Open `github.Rproj` in RStudio.
 3. Sequently run scripts from "scripts/02_analyses/".
 4. OPTIONAL: to reproduce the files in the "cleaned_data/" directory, the scripts from "scripts/01_data_prep" can be run. But the output files have already been provided in the "cleaned_data" directory.
@@ -19,9 +18,10 @@ To reproduce the models:
 │   └── sampling_effort_gardens_plants_aggregated_per_date.txt
 │
 ├── raw_data
-│   ├── explanatory_variables.txt # Data from: Frey, D. & Moretti, M. A comprehensive dataset on cultivated and spontaneously growing vascular plants in urban gardens. Data in Brief 25, 103982 (2019).
-│   ├── plant_floristic_data.txt # Data from: Frey, D. & Moretti, M. A comprehensive dataset on cultivated and spontaneously growing vascular plants in urban gardens. Data in Brief 25, 103982 (2019).
-│   └── RejiChacko_etal_2025_EnviDat/   # Download contents from: Reji Chacko, M., Moretti, M. & Frey, D. Comprehensive dataset of pollinator diversity and visitation rates with individual-based traits and pollination success across four urban garden plant species. (2025). doi:10.16904/envidat.676
+│   ├── explanatory_variables.txt # Data from: Frey & Moretti (2019)
+│   ├── plant_floristic_data.txt # Data from: Frey & Moretti (2019)
+│   └── RejiChacko_etal_2025_EnviDat/ # Download contents from Reji Chacko et al (2025)
+│       └── README.txt
 │
 ├── results # outputs of the scripts, provided here for ease of use
 │   ├── abundance_models_coefficents_all_scales.txt
@@ -68,3 +68,9 @@ To reproduce the models:
 ├── github.Rproj # Open this R Project for ease of use
 ├── R_requirements.txt # list of R packages needed to run codes
 └── README.txt # YOU ARE HERE
+
+References
+
+Frey, D., Moretti, M. (2019), Data from: A comprehensive dataset on cultivated and spontaneously growing vascular plants in urban gardens. Mendeley Data, V2. https://www.doi.org/10.17632/452pj39jm2.2
+Reji Chacko, M., Moretti, M., Frey, D. (2025). Comprehensive dataset of pollinator diversity and visitation rates with individual-based traits and pollination success across four urban garden plant species. EnviDat. https://www.doi.org/10.16904/envidat.676.
+
