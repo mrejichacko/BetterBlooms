@@ -19,7 +19,7 @@ To reproduce the models:
 │
 ├── raw_data
 │   ├── explanatory_variables.txt # Data from: Frey & Moretti (2019)
-│   ├── plant_floristic_data.txt # Data from: Frey & Moretti (2019)
+│   ├── plant_floristic_data.txt # Data from: Frey & Moretti (2019) and Frey et al (in prep)
 │   └── RejiChacko_etal_2025_EnviDat/ # Download contents from Reji Chacko et al (2025)
 │       └── README.txt
 │
@@ -72,5 +72,6 @@ To reproduce the models:
 References
 
 Frey, D., Moretti, M. (2019), Data from: A comprehensive dataset on cultivated and spontaneously growing vascular plants in urban gardens. Mendeley Data, V2. https://www.doi.org/10.17632/452pj39jm2.2
+Frey, D., Amman, L., Albrecht, M. and Moretti, M. manuscript in preparation
 Reji Chacko, M., Moretti, M., Frey, D. (2025). Comprehensive dataset of pollinator diversity and visitation rates with individual-based traits and pollination success across four urban garden plant species. EnviDat. https://www.doi.org/10.16904/envidat.676.
 
