@@ -1,0 +1,33 @@
+Response,Model,Term,Estimate,p_value
+Radish,Original,A_Apis_Radish.dayly.z,-0.089,0.115
+Radish,Original + MEM1,A_Apis_Radish.dayly.z,0.005,0.925
+Radish,Original,A_socialBees_Radish.dayly.z,0.146,0.0556
+Radish,Original + MEM1,A_socialBees_Radish.dayly.z,0.03,0.686
+Radish,Original,A_solitaryBees_Radish.dayly.z,0.002,0.963
+Radish,Original + MEM1,A_solitaryBees_Radish.dayly.z,-0.004,0.911
+Radish,Original,A_Syrphidae_Radish.dayly.z,0.027,0.73
+Radish,Original + MEM1,A_Syrphidae_Radish.dayly.z,0.097,0.166
+Radish,Original + MEM1,MEM1,-0.143,0.00249
+Sainfoin,Original,A_Apis_Sainfoin.dayly.z,0.137,0.346
+Sainfoin,Original + MEM1,A_Apis_Sainfoin.dayly.z,0.149,0.266
+Sainfoin,Original,A_Bombus_Sainfoin.dayly.z,0.252,0.0583
+Sainfoin,Original + MEM1,A_Bombus_Sainfoin.dayly.z,0.201,0.104
+Sainfoin,Original,A_solitaryBees_Sainfoin.dayly.z,0.206,0.198
+Sainfoin,Original + MEM1,A_solitaryBees_Sainfoin.dayly.z,0.1,0.51
+Sainfoin,Original + MEM1,MEM1,0.384,0.00332
+Sainfoin,Original + MEM1 + MEM2 + MEM3,MEM1,0.353,0.00401
+Sainfoin,Original + MEM1 + MEM2 + MEM3,MEM2,-0.094,0.488
+Sainfoin,Original + MEM1 + MEM2 + MEM3,MEM3,0.25,0.0336
+Sainfoin,Original,PlantS.z,0.116,0.434
+Sainfoin,Original + MEM1 + MEM2 + MEM3,PlantS.z,0.142,0.285
+Sainfoin,Original,PlantS.z:Urban_500.z,0.405,0.0142
+Sainfoin,Original + MEM1 + MEM2 + MEM3,PlantS.z:Urban_500.z,0.39,0.00784
+Sainfoin,Original,Urban_500.z,-0.006,0.968
+Sainfoin,Original + MEM1 + MEM2 + MEM3,Urban_500.z,-0.078,0.606
+Radish,Original + MEM1,MEM1,-0.123,0.000279
+Radish,Original,PlantS.z,-0.046,0.266
+Radish,Original + MEM1,PlantS.z,-0.053,0.109
+Radish,Original,PlantS.z:Urban_500.z,0.098,0.0339
+Radish,Original + MEM1,PlantS.z:Urban_500.z,0.081,0.0305
+Radish,Original,Urban_500.z,-0.134,0.00115
+Radish,Original + MEM1,Urban_500.z,-0.087,0.0135

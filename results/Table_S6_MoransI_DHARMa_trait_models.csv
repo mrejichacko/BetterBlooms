@@ -1,0 +1,11 @@
+"","Trait","Group","Observed","Expected","SD","p_value"
+"1","Tongue length","All bees",-0.00817,-0.04545,0.06363,0.558
+"2","Tongue length","All bees excl. honeybees",0.03719,-0.04545,0.06323,0.1912
+"3","Tongue length","Wild social bees",-0.00933,-0.04545,0.06283,0.5653
+"4","Tongue length","Solitary bees",-0.06256,-0.04545,0.06165,0.7815
+"5","Tongue length","Hoverflies",-0.00363,-0.04545,0.04845,0.388
+"6","Body size","All bees",0.02173,-0.04545,0.05206,0.1968
+"7","Body size","All bees excl. honeybees",-0.09,-0.04545,0.05507,0.4186
+"8","Body size","Wild social bees",-0.03471,-0.04545,0.05311,0.8397
+"9","Body size","Solitary bees",-0.00286,-0.04545,0.05919,0.4718
+"10","Body size","Hoverflies",0.01202,-0.04545,0.05633,0.3076
