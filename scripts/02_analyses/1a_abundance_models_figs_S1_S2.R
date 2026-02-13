@@ -4,7 +4,7 @@
 ###
 ### 1a. Modelling abundance
 ### Code by: David Frey and Merin Reji Chacko
-### Last edited: 18.07.2025
+### Last edited: 14.01.2026
 ### 
 #####################################################################
 #####################################################################
@@ -280,6 +280,7 @@ scatter.smooth(fitted(mod.10), df$A_allPollinators, cex.lab=clab, cex.main=cmain
 #Spatial correlation: make one big multipanel plot including all figures:#
 ##########################################################################
 
+library(DHARMa)
 library(sp)
 
 #Model 1:
@@ -331,6 +332,292 @@ bubble(spdata.mod.9, "resid", col=c("blue", "orange"), main="Residuals", xlab="X
 spdata.mod.10 <- data.frame(resid=resid(mod.10), x=df$X_KOORDINATE, y=df$Y_KOORDINATE) 
 coordinates(spdata.mod.10) <- c("x","y")
 bubble(spdata.mod.10, "resid", col=c("blue", "orange"), main="Residuals", xlab="X-coordinates", ylab="Y-coordinates")
+
+#calculate Moran's I
+
+res_list <- lapply(list(mod.1, mod.2, mod.3, mod.4, mod.5, 
+                        mod.6, mod.7, mod.8, mod.9, mod.10), simulateResiduals)
+names(res_list) <- paste0("mod.", 1:10)
+
+sp_tests <- lapply(res_list, function(sim) {
+  testSpatialAutocorrelation(sim, 
+                             x = df$X_KOORDINATE, 
+                             y = df$Y_KOORDINATE)
+})
+
+# build summary table
+moran_tab <- do.call(rbind, lapply(names(sp_tests), function(nm) {
+  tst  <- sp_tests[[nm]]
+  stat <- tst$statistic  # named vector: observed, expected, sd
+  
+  data.frame(
+    Model    = nm,
+    Observed = unname(stat["observed"]),
+    Expected = unname(stat["expected"]),
+    SD       = unname(stat["sd"]),
+    p_value  = tst$p.value,
+    stringsAsFactors = FALSE
+  )
+}))
+
+# tidy formatting
+moran_tab$Observed <- round(moran_tab$Observed, 6)
+moran_tab$Expected <- round(moran_tab$Expected, 6)
+moran_tab$SD       <- round(moran_tab$SD, 6)
+moran_tab$p_value  <- signif(moran_tab$p_value, 4)
+
+# view
+moran_tab
+
+## lookup table: model → response label
+model_labels <- data.frame(
+  Model = paste0("mod.", 1:10),
+  Response = c(
+    "All bees",
+    "All bees (except honeybees)",
+    "Honeybees",
+    "Bumblebees",
+    "Social wild bees",
+    "Solitary bees",
+    "Wasps",
+    "Hoverflies",
+    "Beetles",
+    "All pollinators"
+  ),
+  stringsAsFactors = FALSE
+)
+
+## merge labels into Moran's I table
+moran_tab <- merge(
+  model_labels,
+  moran_tab,
+  by = "Model",
+  all.y = TRUE
+)
+
+## reorder columns (Response first)
+moran_tab <- moran_tab[, c(
+  "Response",
+  "Model",
+  "Observed",
+  "Expected",
+  "SD",
+  "p_value"
+)]
+
+## Order rows by original model order
+moran_tab$Model <- factor(moran_tab$Model, levels = paste0("mod.", 1:10))
+moran_tab <- moran_tab[order(moran_tab$Model), ]
+
+## view
+moran_tab
+
+# export
+#write.csv(moran_tab, "results/Table_S1_MoransI_DHARMa_abundance_models.csv", row.names = FALSE)
+
+# so mod 8 and mod 9 have significant p-values
+
+## Spatial-autocorrelation sensitivity analysis via MEM (glmer)
+
+library(spdep)
+library(lme4)
+library(adespatial)
+
+# 1) Helper: build MEM variables once (reuse for all models)
+add_MEM <- function(df,
+                    x = "X_KOORDINATE",
+                    y = "Y_KOORDINATE",
+                    k = 4,
+                    style = "W") {
+  
+  coords <- as.matrix(df[, c(x, y)])
+  
+  knn <- knearneigh(coords, k = k)
+  nb  <- knn2nb(knn)
+  
+  lw <- nb2listw(nb, style = style, zero.policy = TRUE)
+  
+  mem <- scores.listw(lw, MEM.autocor = "positive")
+  mem_df <- as.data.frame(mem)
+  colnames(mem_df) <- paste0("MEM", seq_len(ncol(mem_df)))
+  
+  cbind(df, mem_df)
+}
+
+# 2) Helper: fit MEM-augmented models + DHARMa Moran’s I
+spatial_MEM_sensitivity <- function(df_mem,
+                                    response,
+                                    fixed = "PlantS.1.z * Urban_500.1.z",
+                                    random = "(1|Id.fac)",
+                                    offset_var = "Total_sampling_effort_d",
+                                    family = poisson(),
+                                    mem_terms = list(
+                                      mem1 = c("MEM1"),
+                                      mem2 = c("MEM1", "MEM2")
+                                    ),
+                                    base_model = NULL,
+                                    x = "X_KOORDINATE",
+                                    y = "Y_KOORDINATE") {
+  
+  if (is.null(base_model)) {
+    stop("Provide the original fitted glmer model as base_model.")
+  }
+  
+  # build formulas
+  base_form <- as.formula(
+    paste0(response, " ~ ", fixed, " + ", random,
+           " + offset(log(", offset_var, "))")
+  )
+  
+  # NOTE: base_model already fitted; base_form is kept for reference.
+  mod_list <- list(base = base_model)
+  
+  for (nm in names(mem_terms)) {
+    mem_part <- paste(mem_terms[[nm]], collapse = " + ")
+    f <- as.formula(
+      paste0(response, " ~ ", fixed, " + ", mem_part, " + ",
+             random, " + offset(log(", offset_var, "))")
+    )
+    mod_list[[nm]] <- glmer(f, family = family, data = df_mem)
+  }
+  
+  # DHARMa spatial tests
+  res_list <- lapply(mod_list, simulateResiduals)
+  sp_tests <- lapply(res_list, function(r) {
+    testSpatialAutocorrelation(r, x = df_mem[[x]], y = df_mem[[y]])
+  })
+  
+  # tidy summary
+  out_sp <- data.frame(
+    model = names(sp_tests),
+    observed = sapply(sp_tests, function(z) z$statistic["observed"]),
+    expected = sapply(sp_tests, function(z) z$statistic["expected"]),
+    sd       = sapply(sp_tests, function(z) z$statistic["sd"]),
+    p_value  = sapply(sp_tests, function(z) z$p.value),
+    row.names = NULL
+  )
+  
+  # coefficients (parametric)
+  out_coef <- lapply(mod_list, function(m) summary(m)$coefficients)
+  
+  list(
+    df_mem = df_mem,
+    models = mod_list,
+    spatial_test = out_sp,
+    coefficients = out_coef
+  )
+}
+
+## ------------------------
+## RUN ONCE: create df_mem
+## ------------------------
+df_mem <- add_MEM(df, k = 4)
+
+## ------------------------
+## Syrphidae (mod.8)
+## ------------------------
+res8 <- spatial_MEM_sensitivity(
+  df_mem     = df_mem,
+  response   = "A_Syrphidae",
+  base_model = mod.8
+)
+
+res8$spatial_test
+res8$coefficients$base
+res8$coefficients$mem1
+res8$coefficients$mem2
+
+## ------------------------
+## Coleoptera (mod.9)
+## ------------------------
+
+res9 <- spatial_MEM_sensitivity(
+  df_mem     = df_mem,
+  response   = "A_Coleoptera",
+  base_model = mod.9
+)
+
+res9$spatial_test
+res9$coefficients$base
+res9$coefficients$mem1
+res9$coefficients$mem2
+
+### TABLE S2
+
+table_s2 <- res8$spatial_test
+table_s2$Response <- "Hoverflies"
+names(table_s2) <- c("Model", "Observed", "Expected", "SD", "p_value", "Response")
+table_s2 <- table_s2[,c(6,1:5)]
+
+table_s22 <- res9$spatial_test
+table_s22$Response <- "Beetles"
+names(table_s22) <- c("Model", "Observed", "Expected", "SD", "p_value", "Response")
+table_s22 <- table_s22[,c(6,1:5)]
+
+table_s2 <- rbind(table_s2, table_s22)
+
+rm(table_s22)
+
+# export
+#write.csv(table_s2, "results/Table_S2_MoransI_DHARMa_abundance_models.csv", row.names = FALSE)
+
+# TABLE S3
+## Function to build a tidy coefficient table (Estimate + p) for base / mem1 / mem2
+## Works for res8 and res9 objects created by spatial_MEM_sensitivity()
+
+make_mem_coef_tidy <- function(res_obj, response_name) {
+  
+  # collect all terms across the three models
+  terms_all <- union(
+    rownames(res_obj$coefficients$base),
+    union(rownames(res_obj$coefficients$mem1), rownames(res_obj$coefficients$mem2))
+  )
+  
+  # helper to pull a value if the term exists
+  pull_term <- function(mat, term, col) {
+    if (term %in% rownames(mat)) mat[term, col] else NA
+  }
+  
+  # build one tidy block per model
+  mk_block <- function(model_key, model_label) {
+    mat <- res_obj$coefficients[[model_key]]
+    data.frame(
+      Response = response_name,
+      Model    = model_label,
+      Term     = terms_all,
+      Estimate = sapply(terms_all, pull_term, mat = mat, col = "Estimate"),
+      p_value  = sapply(terms_all, pull_term, mat = mat, col = "Pr(>|z|)"),
+      stringsAsFactors = FALSE
+    )
+  }
+  
+  out <- rbind(
+    mk_block("base", "Base"),
+    mk_block("mem1", "MEM1"),
+    mk_block("mem2", "MEM1+MEM2")
+  )
+  
+  # drop terms not present in a given model
+  out <- out[!is.na(out$Estimate), ]
+  
+  # format
+  out$Estimate <- round(out$Estimate, 3)
+  out$p_value  <- signif(out$p_value, 3)
+  
+  # order
+  out$Model <- factor(out$Model, levels = c("Base", "MEM1", "MEM1+MEM2"))
+  out <- out[order(out$Term, out$Model), ]
+  
+  rownames(out) <- NULL
+  out
+}
+
+## make next table
+
+table_s3 <- rbind(make_mem_coef_tidy(res8, "Hoverflies"),
+                  make_mem_coef_tidy(res9, "Beetles"))
+
+write.csv(table_s3, "results/Table_S3_MoransI_DHARMa_spatial_abundance_models.csv", row.names = FALSE)
 
 
 ##########################################################
