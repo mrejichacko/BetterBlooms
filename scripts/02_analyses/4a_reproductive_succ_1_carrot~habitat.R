@@ -5,7 +5,7 @@
 ### 4a. Pollinator experiment: 
 ### Modelling plant reproductive success: Daucus ~ Urban
 ### Code by: David Frey and Merin Reji Chacko
-### Last edited: 17.07.2025
+### Last edited: 16.01.2026
 #####################################################################
 #####################################################################
 #####################################################################
@@ -97,6 +97,45 @@ dispersion_glmer(mod.1_Carrot)
 mean(ranef(mod.1_Carrot)$Id.fac[,1])
 mean(ranef(mod.1_Carrot)$Plant_Id.fac[,1])
 mean(ranef(mod.1_Carrot)$Umbell_Id.fac[,1])
+
+# check spatial autocorrelation
+
+library(DHARMa)
+
+sim_carrot <- simulateResiduals(mod.1_Carrot)
+
+# Aggregate to unique spatial locations (garden = Id.fac)
+sim_carrot_garden <- recalculateResiduals(sim_carrot, group = df7a$Id.fac)
+
+# (unique x/y per garden)
+sp_test_carrot <- testSpatialAutocorrelation(
+  sim_carrot_garden,
+  x = df7a$X_KOORDINATE[!duplicated(df7a$Id.fac)],
+  y = df7a$Y_KOORDINATE[!duplicated(df7a$Id.fac)]
+)
+
+sp_test_carrot
+sp_test_carrot$p.value
+sp_test_carrot$statistic
+
+table_s4 <- data.frame(Predictor = "Habitat",
+                       Response = "Carrot", 
+                       Observed = unname(sp_test_carrot$statistic[1]),
+                       Expected = unname(sp_test_carrot$statistic[2]),
+                       SD = unname(sp_test_carrot$statistic[3]),
+                       P_value = sp_test_carrot$p.value
+)
+
+table_s4
+
+write.table(
+  table_s4,
+  "results/Table_S4_MoransI_DHARMa_seedset_abundance_models.csv",
+  sep = ",",
+  row.names = FALSE,
+  col.names = FALSE,  # IMPORTANT: do not rewrite the header
+  append = TRUE
+)
 
 #################################################################################################################
 #################################################################################################################
