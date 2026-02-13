@@ -5,7 +5,7 @@
 ### 3d Pollinator experiment: 
 ### Modelling plant reproductive success: Radish seed set
 ### Code by: David Frey and Merin Reji Chacko
-### Last edited: 28.07.2025
+### Last edited: 14.01.2026
 #####################################################################
 #####################################################################
 #####################################################################
@@ -106,6 +106,46 @@ mean(ranef(mod.1_Radish_seedset)$plant_id.fac[,1])
 
 #Check for overdispersion:
 dispersion_glmer(mod.1_Radish_seedset) #no overdispersion, a bit underdispersion
+
+# check for spatial autocorrelation
+
+library(DHARMa)
+
+sim_radish <- simulateResiduals(mod.1_Radish_seedset)
+
+# Aggregate to unique spatial locations (garden = Id.fac)
+sim_radish_garden <- recalculateResiduals(sim_radish, group = df7c$Id.fac)
+
+# (unique x/y per garden)
+sp_test_radish <- testSpatialAutocorrelation(
+  sim_radish_garden,
+  x = df7c$X_KOORDINATE[!duplicated(df7c$Id.fac)],
+  y = df7c$Y_KOORDINATE[!duplicated(df7c$Id.fac)]
+)
+
+sp_test_radish
+sp_test_radish$p.value
+sp_test_radish$statistic
+
+table_s4 <- data.frame(Predictor = "Abundance",
+                       Response = "Radish seed set", 
+                       Observed = unname(sp_test_radish$statistic[1]),
+                       Expected = unname(sp_test_radish$statistic[2]),
+                       SD = unname(sp_test_radish$statistic[3]),
+                       P_value = sp_test_radish$p.value
+)
+
+
+table_s4
+
+write.table(
+  table_s4,
+  "results/Table_S4_MoransI_DHARMa_seedset_abundance_models.csv",
+  sep = ",",
+  row.names = FALSE,
+  col.names = FALSE,  # IMPORTANT: do not rewrite the header
+  append = TRUE
+)
 
 #################################################################################################################
 
