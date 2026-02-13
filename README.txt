@@ -72,7 +72,7 @@ To reproduce the models:
 │       ├── 4g_reproductive_succ_7_bayesian_inference~habitat.R
 │       └── 4h_reproductive_succ_8_effect_plots~habitat_figure_6.R
 │
-├── github.Rproj # Open this R Project for ease of use
+├── BetterBlooms.Rproj # Open this R Project for ease of use
 ├── R_requirements.txt # list of R packages needed to run codes
 └── README.txt # YOU ARE HERE
 
