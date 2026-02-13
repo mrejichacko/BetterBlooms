@@ -246,6 +246,41 @@ spdata <- data.frame(resid=resid(mod.20), x=df$X_KOORDINATE, y=df$Y_KOORDINATE)
 coordinates(spdata) <- c("x","y")
 bubble(spdata, "resid", col=c("blue", "orange"), main="Residuals", xlab="X-coordinates", ylab="Y-coordinates")
 
+### check for significance of autocorrelation quantitatively:
+res_list <- lapply(list(mod.11, mod.12, mod.14, mod.15, 
+                        mod.16, mod.17, mod.18, mod.19, mod.20), simulateResiduals)
+names(res_list) <- paste0("mod.", c(11,12,14,15,16,17,18,19,20))
+
+sp_tests <- lapply(res_list, function(sim) {
+  testSpatialAutocorrelation(sim, 
+                             x = df$X_KOORDINATE, 
+                             y = df$Y_KOORDINATE)
+})
+
+moran_summary <- sapply(sp_tests, function(x) x$statistic)
+pvals <- sapply(sp_tests, function(x) x$p.value)
+
+res15 <- spatial_MEM_sensitivity(df_mem, response="S_socialBees",  base_model=mod.15)
+res18 <- spatial_MEM_sensitivity(df_mem, response="S_Syrphidae",   base_model=mod.18)
+res19 <- spatial_MEM_sensitivity(df_mem, response="S_Coleoptera",  base_model=mod.19)
+res20 <- spatial_MEM_sensitivity(df_mem, response="S_allPollinators", base_model=mod.20)
+
+res15$spatial_test
+res15$coefficients$base
+res15$coefficients$mem1
+res15$coefficients$mem2
+res18$spatial_test
+res18$coefficients$base
+res18$coefficients$mem1
+res18$coefficients$mem2
+res19$spatial_test
+res19$coefficients$base
+res19$coefficients$mem1
+res19$coefficients$mem2
+res20$spatial_test
+res20$coefficients$base
+res20$coefficients$mem1
+res20$coefficients$mem2
 
 #####################################################################################
 #Third step: Draw Baysian conclusions: Extract the coefficients for tables and plots#
