@@ -5,7 +5,7 @@
 ### 3e. Pollinator experiment: 
 ### Modelling plant reproductive success: Sainfoin: Fruit set
 ### Code by: David Frey and Merin Reji Chacko
-### Last edited: 18.07.2025
+### Last edited: 14.01.2026
 #####################################################################
 #####################################################################
 #####################################################################
@@ -121,6 +121,159 @@ mean(ranef(mod.1_Sainfoin)$Plant_Id.fac[,1])
 
 #Check for overdispersion:
 dispersion_glmer(mod.1_Sainfoin) #without observation-level RF we have overdispersion.
+
+#Check for spatial autocorrelation
+
+library(DHARMa)
+
+sim_sainfoin <- simulateResiduals(mod.1_Sainfoin)
+
+# Aggregate to unique spatial locations (garden = Id.fac)
+sim_sainfoin_garden <- recalculateResiduals(sim_sainfoin, group = df8$Id.fac)
+
+# (unique x/y per garden)
+sp_test_sainfoin <- testSpatialAutocorrelation(
+  sim_sainfoin_garden,
+  x = df8$X_KOORDINATE[!duplicated(df8$Id.fac)],
+  y = df8$Y_KOORDINATE[!duplicated(df8$Id.fac)]
+)
+
+sp_test_sainfoin
+sp_test_sainfoin$p.value
+sp_test_sainfoin$statistic
+
+table_s4 <- data.frame(Predictor = "Abundance",
+                       Response = "Sainfoin", 
+                       Observed = unname(sp_test_sainfoin$statistic[1]),
+                       Expected = unname(sp_test_sainfoin$statistic[2]),
+                       SD = unname(sp_test_sainfoin$statistic[3]),
+                       P_value = sp_test_sainfoin$p.value
+)
+
+
+table_s4
+
+write.table(
+  table_s4,
+  "results/Table_S4_MoransI_DHARMa_seedset_abundance_models.csv",
+  sep = ",",
+  row.names = FALSE,
+  col.names = FALSE,  # IMPORTANT: do not rewrite the header
+  append = TRUE
+)
+
+
+#spatial model 
+
+library(spdep)
+library(adespatial)
+library(lme4)
+
+## 1) Build MEM1 at the garden (Id.fac) level
+coords <- as.matrix(df8[!duplicated(df8$Id.fac), c("X_KOORDINATE", "Y_KOORDINATE")])
+
+knn <- knearneigh(coords, k = 4)
+nb  <- knn2nb(knn)
+lw  <- nb2listw(nb, style = "W", zero.policy = TRUE)
+
+mem <- scores.listw(lw, MEM.autocor = "positive")
+
+# attach MEM1 to every row by matching garden ID
+id_unique <- df8$Id.fac[!duplicated(df8$Id.fac)]
+df8$MEM1 <- mem[match(df8$Id.fac, id_unique), 1]
+
+## 2) Fit the spatial sensitivity model (original model + MEM1)
+mod.1_Sainfoin_MEM <- glmer(
+  cbind(n_flowers_with_fruits, n_flowers_without_fruits) ~
+    A_Apis_Sainfoin.dayly.z +
+    A_Bombus_Sainfoin.dayly.z +
+    A_solitaryBees_Sainfoin.dayly.z +
+    MEM1 +
+    (1 | Id.fac / Plant_Id.fac),
+  data = df8,
+  family = binomial()
+)
+
+summary(mod.1_Sainfoin_MEM)
+
+## 3) Re-test spatial autocorrelation (aggregate to gardens)
+sim_sainfoin_mem <- simulateResiduals(mod.1_Sainfoin_MEM)
+sim_sainfoin_mem_garden <- recalculateResiduals(sim_sainfoin_mem, group = df8$Id.fac)
+
+xy <- df8[!duplicated(df8$Id.fac), c("X_KOORDINATE", "Y_KOORDINATE")]
+
+sp_test_sainfoin_mem <- testSpatialAutocorrelation(
+  sim_sainfoin_mem_garden,
+  x = xy$X_KOORDINATE,
+  y = xy$Y_KOORDINATE
+)
+
+sp_test_sainfoin_mem
+sp_test_sainfoin_mem$p.value
+sp_test_sainfoin_mem$statistic
+
+
+table_s4 <- data.frame(Predictor = "Abundance + MEM1",
+                       Response = "Sainfoin", 
+                       Observed = unname(sp_test_sainfoin_mem$statistic[1]),
+                       Expected = unname(sp_test_sainfoin_mem$statistic[2]),
+                       SD = unname(sp_test_sainfoin_mem$statistic[3]),
+                       P_value = sp_test_sainfoin_mem$p.value
+)
+
+
+table_s4
+
+write.table(
+  table_s4,
+  "results/Table_S4_MoransI_DHARMa_seedset_abundance_models.csv",
+  sep = ",",
+  row.names = FALSE,
+  col.names = FALSE,  # IMPORTANT: do not rewrite the header
+  append = TRUE
+)
+summary(mod.1_Sainfoin)$coefficients
+summary(mod.1_Sainfoin_MEM)$coefficients
+
+
+## fixed effects comparison (Estimate + p only; drop intercept)
+get_fixef_tab <- function(mod, model_label, response_label) {
+  cf <- as.data.frame(summary(mod)$coefficients)
+  cf$Term <- rownames(cf)
+  rownames(cf) <- NULL
+  names(cf)[1:4] <- c("Estimate", "SE", "z", "p_value")
+  
+  out <- data.frame(
+    Response = response_label,
+    Model    = model_label,
+    Term     = cf$Term,
+    Estimate = round(cf$Estimate, 3),
+    p_value  = signif(cf$p_value, 3),
+    stringsAsFactors = FALSE
+  )
+  
+  out[out$Term != "(Intercept)", ]
+}
+
+tab_sainfoin_coef <- rbind(
+  get_fixef_tab(mod.1_Sainfoin,     "Original", "Sainfoin"),
+  get_fixef_tab(mod.1_Sainfoin_MEM, "Original + MEM1",     "Sainfoin")
+)
+
+tab_sainfoin_coef <- tab_sainfoin_coef[order(tab_sainfoin_coef$Term), ]
+
+tab_sainfoin_coef
+
+write.table(
+  tab_sainfoin_coef,
+  "results/Table_S5_MoransI_DHARMa_seedset_abundance_models.csv",
+  sep = ",",
+  row.names = FALSE,
+  col.names = FALSE,
+  quote = FALSE,
+  append = TRUE
+)
+
 
 #### Model 1b ######################################################
 
