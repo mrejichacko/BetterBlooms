@@ -491,6 +491,122 @@ plot(df8[which(df8$family == "Syrphidae" &!is.na(df8$FWL)),]$sex, resid(mod.10),
 scatter.smooth(fitted(mod.10), log(df8[which(df8$family == "Syrphidae" & !is.na(df8$FWL)),]$FWL), main="Observed vs. fitted", xlab = "Fitted values", ylab = "Observed values", cex.main=cmain, cex.axis=caxis) #data vs. fitted
 #dev.off()
 
+# test for spatial autocorrelation
+library(DHARMa)
+
+## put all models in a named list
+mods <- list(
+  mod.1 = mod.1,
+  mod.2 = mod.2,
+  mod.3 = mod.3,
+  mod.4 = mod.4,
+  mod.5 = mod.5,
+  mod.6 = mod.6,
+  mod.7 = mod.7,
+  mod.8 = mod.8,
+  mod.9 = mod.9,
+  mod.10 = mod.10
+)
+
+## function: spatial autocorrelation test for one model
+spatial_test_one <- function(model, data, x = "X_KOORDINATE", y = "Y_KOORDINATE",
+                             nsim = 1000) {
+  
+  sim <- simulateResiduals(model, n = nsim)
+  
+  mf  <- model.frame(model)
+  idx <- as.integer(rownames(mf))
+  
+  xy <- data[idx, c(x, y)]
+  
+  ## define unique spatial locations
+  loc <- interaction(xy[[x]], xy[[y]], drop = TRUE)
+  
+  ## aggregate residuals per location
+  sim_loc <- recalculateResiduals(sim, group = loc)
+  
+  ## coordinates matching aggregated residuals
+  xy_loc <- xy[match(levels(loc), loc), , drop = FALSE]
+  
+  testSpatialAutocorrelation(sim_loc,
+                             x = xy_loc[[x]],
+                             y = xy_loc[[y]])
+}
+
+## run for all models
+sp_tests <- lapply(mods, spatial_test_one, data = df8)
+
+## extract p-values and Moran's I
+pvals <- sapply(sp_tests, function(x) x$p.value)
+moranI <- sapply(sp_tests, function(x) x$statistic["observed"])
+
+pvals
+moranI
+
+
+## Build Moran's I summary table (same columns as before) for trait models
+
+## 1) map model IDs to response labels (edit labels if you want different wording)
+resp_lab <- c(
+  mod.1  = "Tongue length (All bees)",
+  mod.2  = "Tongue length (All bees excl. honeybees)",
+  mod.3  = "Tongue length (Wild social bees)",
+  mod.4  = "Tongue length (Solitary bees)",
+  mod.5  = "Tongue length (Hoverflies)",
+  mod.6  = "Body size (All bees)",
+  mod.7  = "Body size (All bees excl. honeybees)",
+  mod.8  = "Body size (Wild social bees)",
+  mod.9  = "Body size (Solitary bees)",
+  mod.10 = "Body size (Hoverflies)"
+)
+
+## 2) extract full stats into a table
+trait_moran_tab <- do.call(rbind, lapply(names(sp_tests), function(nm) {
+  tst  <- sp_tests[[nm]]
+  stat <- tst$statistic
+  
+  data.frame(
+    Response = unname(resp_lab[nm]),
+    Observed = unname(stat["observed"]),
+    Expected = unname(stat["expected"]),
+    SD       = unname(stat["sd"]),
+    p_value  = tst$p.value,
+    stringsAsFactors = FALSE
+  )
+}))
+
+trait_moran_tab$Observed <- round(trait_moran_tab$Observed, 5)
+trait_moran_tab$Expected <- round(trait_moran_tab$Expected, 5)
+trait_moran_tab$SD       <- round(trait_moran_tab$SD, 5)
+trait_moran_tab$p_value  <- signif(trait_moran_tab$p_value, 4)
+
+## 4) keep same row order as models
+trait_moran_tab$Response <- factor(trait_moran_tab$Response, levels = resp_lab[names(sp_tests)])
+trait_moran_tab <- trait_moran_tab[order(trait_moran_tab$Response), ]
+trait_moran_tab$Response <- as.character(trait_moran_tab$Response)
+
+trait_moran_tab
+
+## Split Response into Trait + Group columns, removing brackets
+
+# make sure Response is character
+trait_moran_tab$Response <- as.character(trait_moran_tab$Response)
+
+# extract text before and inside parentheses
+trait_moran_tab$Trait <- sub("\\s*\\(.*\\)$", "", trait_moran_tab$Response)
+trait_moran_tab$Group <- sub("^.*\\((.*)\\)\\s*$", "\\1", trait_moran_tab$Response)
+
+# if a row had no parentheses, keep Group as NA
+trait_moran_tab$Group[trait_moran_tab$Group == trait_moran_tab$Response] <- NA
+
+# drop old column + reorder
+trait_moran_tab$Response <- NULL
+trait_moran_tab <- trait_moran_tab[, c("Trait", "Group", "Observed", "Expected", "SD", "p_value")]
+
+trait_moran_tab
+
+write.csv(trait_moran_tab, "results/Table_S6_MoransI_DHARMa_trait_models.csv")
+
 ##########################################################
 #Draw Baysian conclusions: 1. Make the Coefficient plots #
 ##########################################################
