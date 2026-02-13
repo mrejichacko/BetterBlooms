@@ -4,7 +4,7 @@ Contact: Merin Reji Chacko (merin.rejichacko@gmail.com)
 To reproduce the models:
 
 1. Go to Envidat. NOTE: Most scripts in `02_analyses/` will not run without data being added to the "raw_data/RejiChacko_etal_2025_EnviDat" directory. Simply copy and unzip all the files from Reji Chacko et al (2025), see below for references.  
-2. Open `github.Rproj` in RStudio.
+2. Open `BetterBlooms.Rproj` in RStudio.
 3. Sequently run scripts from "scripts/02_analyses/".
 4. OPTIONAL: to reproduce the files in the "cleaned_data/" directory, the scripts from "scripts/01_data_prep" can be run. But the output files have already been provided in the "cleaned_data" directory.
 
