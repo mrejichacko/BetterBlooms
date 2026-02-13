@@ -31,7 +31,13 @@ To reproduce the models:
 │   ├── beta_coefficients_reproductive_success_all.txt
 │   ├── beta_coefficients_reproductive_success_garden_landscape.txt
 │   ├── Beta_coefficients_TraitFiltering_ITD.txt
-│   └── Beta_coefficients_TraitFiltering_tongue.txt
+│   ├── Beta_coefficients_TraitFiltering_tongue.txt
+│   ├── Table_S1_MoransI_DHARMa_abundance_models.csv
+│   ├── Table_S2_MoransI_DHARMa_abundance_models.csv
+│   ├── Table_S3_MoransI_DHARMa_spatial_abundance_models.csv
+│   ├── Table_S4_MoransI_DHARMa_seedset_abundance_models.csv
+│   ├── Table_S5_MoransI_DHARMa_seedset_abundance_models.csv
+│   └── Table_S6_MoransI_DHARMa_trait_models.csv
 │
 ├── scripts
 │   ├── 01_data_preparation # this is provided for reproducibility, but the outputs are provided in "cleaned_data"
@@ -46,6 +52,7 @@ To reproduce the models:
 │       ├── 1c_effect_plots_abundance_fig_2.R
 │       ├── 1d_effect_plots_richness_fig_S3.R
 │       ├── 1e_coef_plots_abundance_and_richness_figs_3_S4.R
+│       ├── 1f_abundance_models_by_phytometer
 │       ├── 2_trait_models__figs_4_5.R
 │       ├── 3a_reproductive_succ_1_data_prep.R
 │       ├── 3b_reproductive_succ_2_carrot~abundance.R
