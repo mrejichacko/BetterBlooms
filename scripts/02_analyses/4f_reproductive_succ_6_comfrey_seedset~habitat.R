@@ -3,7 +3,7 @@
 ### 4f. Pollinator experiment: 
 ### Modelling plant reproductive success: comfrey seed set ~ Urban
 ### Code by: David Frey and Merin Reji Chacko
-### Last edited: 18.07.2025
+### Last edited: 18.01.2026
 #####################################################################
 #####################################################################
 #####################################################################
@@ -92,6 +92,45 @@ mean(ranef(mod.1_Comfrey_seedset)$Plant_Id.fac[,1])
 
 #Check for overdispersion:
 dispersion_glmer(mod.1_Comfrey_seedset) # underdispersed...
+
+#Check for spatial autocorrelation
+
+sim_comfrey <- simulateResiduals(mod.1_Comfrey_seedset)
+
+# Aggregate to unique spatial locations (garden = Id.fac)
+sim_comfrey_garden <- recalculateResiduals(sim_comfrey, group = df7f$Id.fac)
+
+# (unique x/y per garden)
+sp_test_comfrey <- testSpatialAutocorrelation(
+  sim_comfrey_garden,
+  x = df7f$X_KOORDINATE[!duplicated(df7f$Id.fac)],
+  y = df7f$Y_KOORDINATE[!duplicated(df7f$Id.fac)]
+)
+
+sp_test_comfrey
+sp_test_comfrey$p.value
+sp_test_comfrey$statistic
+
+
+table_s4 <- data.frame(Predictor = "Habitat",
+                       Response = "Comfrey seed set", 
+                       Observed = unname(sp_test_comfrey$statistic[1]),
+                       Expected = unname(sp_test_comfrey$statistic[2]),
+                       SD = unname(sp_test_comfrey$statistic[3]),
+                       P_value = sp_test_comfrey$p.value
+)
+
+
+table_s4
+
+write.table(
+  table_s4,
+  "results/Table_S4_MoransI_DHARMa_seedset_abundance_models.csv",
+  sep = ",",
+  row.names = FALSE,
+  col.names = FALSE,  # IMPORTANT: do not rewrite the header
+  append = TRUE
+)
 
 #######################################################################################################################################
 #######################################################################################################################################
